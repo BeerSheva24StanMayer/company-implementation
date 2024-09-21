@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 
 
-abstract class CompanyTest {
+public class CompanyTest {
 private static final long ID1 = 123;
 private static final int SALARY1 = 1000;
 private static final String DEPARTMENT1 = "QA";
