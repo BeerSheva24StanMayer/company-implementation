@@ -1,8 +1,9 @@
 package telran.employees;
-
 import java.util.*;
 
-public class CompanyImpl implements Company {
+import telran.io.Persistable;
+
+public class CompanyImpl implements Company, Persistable {
     private TreeMap<Long, Employee> employees = new TreeMap<>();
     private HashMap<String, List<Employee>> departments = new HashMap<>();
     private TreeMap<Float, List<Manager>> managersFactor = new TreeMap<>();
@@ -118,5 +119,17 @@ public class CompanyImpl implements Company {
             }
         }
     }
+
+    @Override
+    public void saveToFile(String fileName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'saveToFile'");
+    }
+    @Override
+    public void restoreFromFile(String fileName) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'restoreFromFile'");
+    }
+
 
 }
