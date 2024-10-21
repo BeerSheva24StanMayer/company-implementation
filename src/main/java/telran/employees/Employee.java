@@ -6,8 +6,8 @@ public class Employee {
     private long id;
     private int basicSalary;
     private String department;
-
     public Employee(){
+
     }
     @SuppressWarnings("unchecked")
     static public Employee getEmployeeFromJSON(String jsonStr) {
@@ -43,9 +43,12 @@ public class Employee {
     }
     @Override
     public boolean equals(Object obj) {
-        return id == ((Employee) obj).getId();
+       boolean res = false;
+       if (obj instanceof Employee empl) {
+            res = id == empl.id;
+       }
+       return res;
     }
-
     @Override
     public String toString() {
         JSONObject jsonObj = new JSONObject();

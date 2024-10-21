@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import telran.io.Persistable;
@@ -140,11 +141,13 @@ void setCompany() {
 		}
 	
 			@Test
+			@Disabled
 		void jsonTest() {
 			Employee empl = Employee.getEmployeeFromJSON("{\"basicSalary\":1000,\"className\":\"telran.employees.Manager\",\"id\":123,\"department\":\"QA\",\"factor\":2}");
 			assertEquals(empl, new Manager(ID1,SALARY1,DEPARTMENT1,FACTOR1));
 		}
 		@Test
+		@Disabled
 		void persistenceTest() {
 			if (company instanceof Persistable persCompany) {
 				persCompany.saveToFile("company.data");

@@ -1,51 +1,56 @@
 package telran.employees;
+
+import java.io.*;
+import java.nio.file.*;
 import java.util.*;
 
 import telran.io.Persistable;
 
-public class CompanyImpl implements Company, Persistable {
-    private TreeMap<Long, Employee> employees = new TreeMap<>();
-    private HashMap<String, List<Employee>> departments = new HashMap<>();
-    private TreeMap<Float, List<Manager>> managersFactor = new TreeMap<>();
-
-    private class CompanyIterator implements Iterator<Employee> {
-        private Iterator<Employee> it = employees.values().iterator();
-        private Employee prev = null;
-
-        @Override
-        public boolean hasNext() {
-            return it.hasNext();
-        }
-
-        @Override
-        public Employee next() {
-            return prev = it.next();
-        }
-
-        @Override
-        public void remove() {
-            it.remove();
-            removeFromDepartment(prev);
-            removeFromManager(prev);
-        }
-
+public class CompanyImpl implements Company, Persistable{
+   private TreeMap<Long, Employee> employees = new TreeMap<>();
+   private HashMap<String, List<Employee>> employeesDepartment = new HashMap<>();
+   private TreeMap<Float, List<Manager>> managersFactor = new TreeMap<>();
+private class CompanyIterator implements Iterator<Employee> {
+    Iterator<Employee> iterator = employees.values().iterator();
+    Employee lastIterated;
+    @Override
+    public boolean hasNext() {
+       return iterator.hasNext();
     }
 
     @Override
+    public Employee next() {
+       lastIterated = iterator.next();
+       return lastIterated;
+    }
+    @Override
+    public void remove() {
+       iterator.remove();
+       removeFromIndexMaps(lastIterated);
+    }
+}
+    @Override
     public Iterator<Employee> iterator() {
-        return new CompanyIterator();
+       return new CompanyIterator();
     }
 
     @Override
     public void addEmployee(Employee empl) {
-        Employee ifEmployee = employees.putIfAbsent(empl.getId(), empl);
-        if (ifEmployee != null) {
-            throw new IllegalStateException();
-        } else {
-            addToDepartments(empl);
-            addToManagers(empl);
+        long id = empl.getId();
+        if (employees.putIfAbsent(id, empl) != null) {
+            throw new IllegalStateException("Already exists employee " + id);
         }
+        addIndexMaps(empl);
     }
+
+    private void addIndexMaps(Employee empl) {
+       employeesDepartment.computeIfAbsent(empl.getDepartment(), k -> new ArrayList<>()).add(empl);
+       if (empl instanceof Manager manager) {
+            managersFactor.computeIfAbsent(manager.getFactor(), k -> new ArrayList<>()).add(manager);
+       }
+    }
+
+    
 
     @Override
     public Employee getEmployee(long id) {
@@ -54,82 +59,67 @@ public class CompanyImpl implements Company, Persistable {
 
     @Override
     public Employee removeEmployee(long id) {
-        Employee removedEmployee = employees.remove(id);
-        if (removedEmployee == null) {
-            throw new NoSuchElementException();
-        } else {
-            removeFromDepartment(removedEmployee);
-            removeFromManager(removedEmployee);
+        Employee empl = employees.remove(id);
+        if(empl == null) {
+            throw new NoSuchElementException("Not found employee " + id);
         }
-        return removedEmployee;
+        removeFromIndexMaps(empl);
+        return empl;
+    }
+
+
+    private void removeFromIndexMaps(Employee empl) {
+        removeIndexMap(empl.getDepartment(), employeesDepartment, empl);
+        if (empl instanceof Manager manager) {
+            removeIndexMap(manager.getFactor(), managersFactor, manager);
+        }
+    }
+
+    private <K, V extends Employee> void removeIndexMap(K key, Map<K, List<V>> map, V empl) {
+        List<V> list = map.get(key);
+        list.remove(empl);
+        if (list.isEmpty()) {
+            map.remove(key);
+        }
     }
 
     @Override
     public int getDepartmentBudget(String department) {
-        int budget = 0;
-        List<Employee> listOfEmpl = departments.get(department);
-        if (listOfEmpl != null) {
-            budget = listOfEmpl.stream().mapToInt(n -> n.computeSalary()).sum();
-        }
-        return budget;
+        return employeesDepartment.getOrDefault(department, Collections.emptyList())
+        .stream().mapToInt(Employee::computeSalary).sum();
     }
 
     @Override
     public String[] getDepartments() {
-        return departments.keySet().stream().sorted().toArray(String[]::new);
+        return employeesDepartment.keySet().stream().sorted().toArray(String[]::new);
     }
 
     @Override
     public Manager[] getManagersWithMostFactor() {
-        Manager[] res = new Manager[0];
+        Manager [] res = new Manager[0];
         if (!managersFactor.isEmpty()) {
-            res = managersFactor.lastEntry().getValue().toArray(Manager[]::new);
+            res = managersFactor.lastEntry().getValue().toArray(res);
         }
         return res;
     }
 
-    private void addToManagers(Employee empl) {
-        if (empl instanceof Manager manager) {
-            managersFactor.computeIfAbsent(manager.getFactor(), n -> new ArrayList<>()).add(manager);
-        }
-    }
-
-    private void removeFromManager(Employee empl) {
-        if (empl instanceof Manager manager) {
-            Float factor = manager.getFactor();
-            if (factor != null) {
-                managersFactor.get(manager.getFactor()).remove(manager);
-                if (managersFactor.get(factor).isEmpty())
-                    managersFactor.remove(factor);
-            }
-
-        }
-    }
-
-    private void addToDepartments(Employee empl) {
-        departments.computeIfAbsent(empl.getDepartment(), n -> new ArrayList<>()).add(empl);
-    }
-
-    private void removeFromDepartment(Employee empl) {
-        String department = empl.getDepartment();
-        if (department != null) {
-            departments.get(department).remove(empl);
-            if (departments.get(department).isEmpty()) {
-                departments.remove(department);
-            }
-        }
-    }
-
     @Override
     public void saveToFile(String fileName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'saveToFile'");
-    }
-    @Override
-    public void restoreFromFile(String fileName) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'restoreFromFile'");
+        try (PrintWriter writer = new PrintWriter(fileName)) {
+            forEach(writer::println);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    @Override
+    public void restoreFromFile(String fileName) {
+        try (BufferedReader reader = Files.newBufferedReader(Path.of(fileName))) {
+            reader.lines().map(Employee::getEmployeeFromJSON).forEach(this::addEmployee);
+        } catch (FileNotFoundException e) { 
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }
