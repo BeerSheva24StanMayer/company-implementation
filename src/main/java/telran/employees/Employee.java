@@ -35,6 +35,11 @@ public class Employee {
     public int computeSalary() {
         return basicSalary;
     }
+
+    public int getBasicSalary() {
+        return basicSalary;
+    }
+
     public long getId() {
         return id;
     }
