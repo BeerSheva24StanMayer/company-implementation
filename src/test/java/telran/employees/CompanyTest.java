@@ -3,12 +3,10 @@ package telran.employees;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Arrays;
-import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import telran.io.Persistable;
@@ -40,7 +38,7 @@ private static final long ID7 = 500;
 Employee empl1 = new WageEmployee(ID1, SALARY1, DEPARTMENT1, WAGE1, HOURS1);
 Employee empl2 = new Manager(ID2, SALARY2, DEPARTMENT1, FACTOR1);
 Employee empl3 = new SalesPerson(ID3, SALARY3, DEPARTMENT2, WAGE1, HOURS1, PERCENT1, SALES1);
- Company company = new CompanyImpl();
+ Company company = new ConcurrentLocker();
 @BeforeEach
 void setCompany() {
 	
