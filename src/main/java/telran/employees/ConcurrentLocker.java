@@ -10,14 +10,6 @@ public class ConcurrentLocker extends CompanyImpl{
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
-    public void read(Runnable func) {
-        readLock.lock();
-        try {
-            func.run();
-        } finally {
-            readLock.unlock();
-        }
-    }
 
     public <T> T read(Supplier<T> func) {
         readLock.lock();
@@ -28,15 +20,6 @@ public class ConcurrentLocker extends CompanyImpl{
             readLock.unlock();
         }
         return result;
-    }
-
-    public void write(Runnable func) {
-        writeLock.lock();
-        try {
-            func.run();
-        } finally {
-            writeLock.unlock();
-        }
     }
 
     public <T> T write(Supplier<T> func) {
@@ -50,7 +33,6 @@ public class ConcurrentLocker extends CompanyImpl{
         return result;
     }
 
-
     @Override
     public Iterator<Employee> iterator() {
        return read(super::iterator);
@@ -58,7 +40,7 @@ public class ConcurrentLocker extends CompanyImpl{
 
     @Override
     public void addEmployee(Employee empl) {
-        write(() -> super.addEmployee(empl));
+        write(() -> { super.addEmployee(empl); return null;});
     }
 
     @Override
@@ -88,12 +70,7 @@ public class ConcurrentLocker extends CompanyImpl{
 
     @Override
     public void saveToFile(String fileName) {
-        write(() -> saveToFile(fileName));
+        read(() -> {super.saveToFile(fileName); return null;});
     }
 
-    @Override
-    public void restoreFromFile(String fileName) {
-        write(() -> restoreFromFile(fileName));
-    }
-    
 }
