@@ -20,8 +20,14 @@ public static Employee toEmployeeDtoFromEntity(EmployeeEntity entity) {
 public static EmployeeEntity toEmployeeEntityFromDto(Employee empl) {
     String emplClassName = empl.getClass().getSimpleName();
     String entityClassName = ENTITY_PACKAGE + emplClassName + "Entity";
-    
-
-    return null;
+    try {
+        @SuppressWarnings("unchecked")
+        Class<EmployeeEntity> clazz = (Class<EmployeeEntity>) Class.forName(entityClassName);
+        EmployeeEntity entity =  clazz.getConstructor().newInstance();
+        entity.fromEmployeeDto(empl);
+        return entity;
+    } catch (Exception e) {
+       throw new RuntimeException(e);
+    }
 }
 }
