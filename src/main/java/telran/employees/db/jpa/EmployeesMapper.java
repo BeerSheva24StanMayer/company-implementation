@@ -2,10 +2,11 @@ package telran.employees.db.jpa;
 
 import org.json.JSONObject;
 
-import telran.employees.Employee;
+import telran.employees.*;
 
 public class EmployeesMapper {
 private static final String PACKAGE = "telran.employees.";
+private static final String ENTITY_PACKAGE = "telran.employees.db.jpa.";
 private static final String CLASS_NAME = "className";
 
 public static Employee toEmployeeDtoFromEntity(EmployeeEntity entity) {
@@ -17,7 +18,10 @@ public static Employee toEmployeeDtoFromEntity(EmployeeEntity entity) {
     return Employee.getEmployeeFromJSON(jsonObj.toString());
 }
 public static EmployeeEntity toEmployeeEntityFromDto(Employee empl) {
-    //TODO
+    String emplClassName = empl.getClass().getSimpleName();
+    String entityClassName = ENTITY_PACKAGE + emplClassName + "Entity";
+    
+
     return null;
 }
 }
