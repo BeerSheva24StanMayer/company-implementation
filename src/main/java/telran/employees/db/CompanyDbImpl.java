@@ -6,6 +6,7 @@ import telran.employees.*;
 
 public class CompanyDbImpl implements Company{
     private CompanyRepository repository;
+
     
     public CompanyDbImpl(CompanyRepository repository) {
         this.repository = repository;
@@ -18,26 +19,44 @@ public class CompanyDbImpl implements Company{
 
     @Override
     public void addEmployee(Employee empl) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addEmployee'");
+        repository.getEmployees().add(empl);
     }
 
     @Override
     public Employee getEmployee(long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getEmployee'");
+        Employee empl = null;
+        boolean res = false;
+        int i = 0;
+        while(!res && i < repository.getEmployees().size() ) {
+            if(repository.getEmployees().get(i).getId() == id) {
+                empl = repository.getEmployees().get(i);
+                res = true;
+            }
+            i++;
+        }
+        return empl;
     }
 
     @Override
     public Employee removeEmployee(long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeEmployee'");
+        Employee empl = null;
+        boolean res = false;
+        int i = 0;
+        while(!res && i < repository.getEmployees().size() ) {
+            if(repository.getEmployees().get(i).getId() == id) {
+                empl = repository.getEmployees().get(i);
+                repository.getEmployees().remove(i);
+                res = true;
+            }
+            i++;
+        }
+        return empl;
     }
 
     @Override
     public int getDepartmentBudget(String department) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDepartmentBudget'");
+        throw new UnsupportedOperationException("Unimplemented method 'getDepartments'");
     }
 
     @Override
