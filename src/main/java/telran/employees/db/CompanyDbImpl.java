@@ -1,13 +1,41 @@
 package telran.employees.db;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import telran.employees.*;
 
-public class CompanyDbImpl implements Company{
+public class CompanyDbImpl implements Company {
     private CompanyRepository repository;
 
     
+    private class CompanyDbIterator implements Iterator<Employee>  {
+
+        Iterator<Employee> iterator = new ArrayList<>(repository.getEmployees()).iterator();
+        Employee previous;
+
+        @Override
+        public boolean hasNext() {
+            return iterator().hasNext();
+        }
+
+
+        @Override
+    public Employee next() {
+        previous = iterator().next();
+        return previous;
+    }
+
+    @Override
+    public void remove() {
+       iterator.remove();
+       removeEmployee(previous.getId());
+
+    }
+    }
+
+
     public CompanyDbImpl(CompanyRepository repository) {
         this.repository = repository;
     }
@@ -19,56 +47,35 @@ public class CompanyDbImpl implements Company{
 
     @Override
     public void addEmployee(Employee empl) {
-        repository.getEmployees().add(empl);
+        repository.insertEmployee(empl);
     }
 
     @Override
     public Employee getEmployee(long id) {
-        Employee empl = null;
-        boolean res = false;
-        int i = 0;
-        while(!res && i < repository.getEmployees().size() ) {
-            if(repository.getEmployees().get(i).getId() == id) {
-                empl = repository.getEmployees().get(i);
-                res = true;
-            }
-            i++;
-        }
-        return empl;
+        return repository.findEmployee(id);
     }
 
     @Override
     public Employee removeEmployee(long id) {
-        Employee empl = null;
-        boolean res = false;
-        int i = 0;
-        while(!res && i < repository.getEmployees().size() ) {
-            if(repository.getEmployees().get(i).getId() == id) {
-                empl = repository.getEmployees().get(i);
-                repository.getEmployees().remove(i);
-                res = true;
-            }
-            i++;
-        }
-        return empl;
+        return repository.removeEmployee(id);
     }
 
     @Override
     public int getDepartmentBudget(String department) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDepartments'");
+        List<Employee> employees = repository.getEmployeesByDepartment(department);
+        return employees.stream().mapToInt(Employee::computeSalary).sum();
     }
 
     @Override
     public String[] getDepartments() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDepartments'");
+        List<String> listDepartments = repository.findDepartments();
+        return listDepartments.toArray(String[]::new);
     }
 
     @Override
     public Manager[] getManagersWithMostFactor() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getManagersWithMostFactor'");
+        List<Manager> managerList =repository.findManangerWithMostFactor();
+        return managerList.toArray(Manager[]::new);
     }
 
 }
